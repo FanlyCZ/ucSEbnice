@@ -7,8 +7,8 @@ import time
 
 
 #Program version
-ucSEbniceProgramVersion = "v1.0"
-ucSEbniceVersionDate = "24.09.2025"
+ucSEbniceProgramVersion = "v1.1"
+ucSEbniceVersionDate = "25.09.2025"
 ucSEbniceMinigames = ['Jeden ze čtyř', 'Doplň odpověď']
 
 #Menu screen
@@ -45,7 +45,7 @@ def Menu():
                                                                                                                             
                                                                                             
 ''' + colorama.Fore.RESET)
-    MenuQ = [inquirer.List('MenuQ', choices=['Vytvořit novou úlohu', 'Upravit úlohu', 'Vymazat úlohu', f"{ucSEbniceProgramVersion}", "Odejít"])]
+    MenuQ = [inquirer.List('MenuQ', choices=['Vytvořit novou úlohu', 'Upravit úlohu','Vymazat úlohu', f"{ucSEbniceProgramVersion}", "Odejít"])]
     MenuA = inquirer.prompt(MenuQ)
     match MenuA['MenuQ']:
         case 'Vytvořit novou úlohu':
@@ -65,7 +65,7 @@ def PatchNotes():
     os.system('cls')
     print(colorama.Fore.LIGHTBLUE_EX + f'Aktuální verze: {ucSEbniceProgramVersion} [{ucSEbniceVersionDate}]' + colorama.Fore.RESET)
     print('''
-    - Stabilní verze
+    - Přidána možnost duplikovat odpovědi u otázek jako nové otázky v minihře: "Doplň odpověď"
 ''')
     os.system('pause')
     Menu()
@@ -345,7 +345,7 @@ def DoplnOdpovedMaker(Name, content):
         print(f'{colorama.Fore.LIGHTBLUE_EX}Úloha: {colorama.Fore.LIGHTGREEN_EX}{Name}.json')
         print(f'{colorama.Fore.YELLOW}Minihra:{colorama.Fore.RESET} {colorama.Fore.GREEN}Doplň odpověď{colorama.Fore.RESET}')
         print(f'{colorama.Fore.LIGHTRED_EX}Počet otázek: {colorama.Fore.LIGHTMAGENTA_EX}{len(content['Doplň odpověď'])}{colorama.Fore.RESET}\n\n\n')
-        MakerQ = [inquirer.List('MakerQ', choices=['Vytvořit novou otázku', 'Upravit otázku', 'Smazat otázku', 'Uložit a odejít'])]
+        MakerQ = [inquirer.List('MakerQ', choices=['Vytvořit novou otázku', 'Upravit otázku', 'Smazat otázku', 'Duplikovat všechny odpovědi jako otázky', 'Uložit a odejít'])]
         MakerA = inquirer.prompt(MakerQ)
         match MakerA['MakerQ']:
 
@@ -442,6 +442,23 @@ def DoplnOdpovedMaker(Name, content):
                         except:
                             print(f'\n\n{colorama.Fore.RED}CHYBA: Otázka nenalezena\n{colorama.Fore.RESET}')
                             os.system('pause')
+
+            case 'Duplikovat všechny odpovědi jako otázky':
+                os.system('cls')
+                print(f'{colorama.Fore.YELLOW}Vážně chcete zduplikovat všechny odpovědi a udělat z nich nové otázky? \nTahle akce se hodí pouze v konkrétních případech a nemá být využívaná, pokud si nejste jistí, co děláte. \nTahle možnost udělá z: [Otázka: Odpověď] tohle: [Otázka: Odpověď, Odpověď: Otázka].\n\n\nZnovu opakuji. Tahle možnost se využívá v případě, když chcete duplikovat dosavadní otázky a obrátit je.\nTohle rozhodnutí nelze potom změnit. Maximálně ručně odstranit duplikáty. Dělejte dle vlastního uvážení{colorama.Fore.RESET}\n\n')
+                Question = [inquirer.List('Answer', choices=['Pokračuj', 'Nic nedělat a vrátit se'])]
+                Answer = inquirer.prompt(Question)['Answer']
+                if Answer != 'Pokračuj':
+                    pass
+                else:
+                    Questions = list(content['Doplň odpověď'].keys())
+                    AnswersRaw = content['Doplň odpověď'].values()
+                    Answers = []
+                    for x in AnswersRaw:
+                        for y in x:
+                            Answers.append(y)
+                    for NewQuestion, NewAnswer in zip(Answers, Questions):
+                        content['Doplň odpověď'].update({NewQuestion : [NewAnswer]})
 
             case 'Uložit a odejít':
                 with open(f"data/{Name}.json", 'w', encoding='UTF-8') as outfile:
